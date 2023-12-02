@@ -262,9 +262,10 @@ class Rocket:
     def control(self, controller=None):
         sensor_readings = list(self.sense())
         engine_thrusts = [engine.current_thrust_ratio for engine in self.engines]
+        fuel_mass = self.fuel_mass / self.initial_fuel_mass
         if controller is None:
             return
-        prediction = controller.predict(sensor_readings, engine_thrusts)
+        prediction = controller.predict(sensor_readings, engine_thrusts, fuel_mass)
         for i, this_engine_prediction in enumerate([p for p in prediction[0]]):
             if this_engine_prediction < 0.5:
                 self.engines[i].kill()
