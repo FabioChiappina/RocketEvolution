@@ -57,6 +57,26 @@ def is_engine_code(engine_code):
         return False
     return True
 
+# Unpacks the input dictionary of simulation data into individual variables:
+def unpack_simulation_data(simulation_data):
+    position_x_true = simulation_data["position_x_true"]
+    position_y_true = simulation_data["position_y_true"]
+    angular_position_true = simulation_data["angular_position_true"]
+    angular_velocity_true = simulation_data["angular_velocity_true"]
+    altitude_sensor_readings = simulation_data["altitude_sensor_readings"]
+    speed_sensor_readings = simulation_data["speed_sensor_readings"]
+    angular_position_sensor_readings = simulation_data["angular_position_sensor_readings"]
+    angular_velocity_sensor_readings = simulation_data["angular_velocity_sensor_readings"]
+    altitude_sensor_readings_scaled = simulation_data["altitude_sensor_readings_scaled"]
+    speed_sensor_readings_scaled = simulation_data["speed_sensor_readings_scaled"]
+    angular_position_sensor_readings_scaled = simulation_data["angular_position_sensor_readings_scaled"]
+    angular_velocity_sensor_readings_scaled = simulation_data["angular_velocity_sensor_readings_scaled"]
+    engine_thrusts = simulation_data["engine_thrusts"]
+    thrust_vectors = simulation_data["thrust_vectors"]
+    fuel_masses = simulation_data["fuel_masses"]
+    return position_x_true, position_y_true, angular_position_true, angular_velocity_true, altitude_sensor_readings, speed_sensor_readings, angular_position_sensor_readings, angular_velocity_sensor_readings, altitude_sensor_readings_scaled, speed_sensor_readings_scaled, angular_position_sensor_readings_scaled, angular_velocity_sensor_readings_scaled, engine_thrusts, thrust_vectors, fuel_masses
+
+# Loads the simulation data, controller (keras model), and engine names for the run specified by generation/individual numbers and run name.
 def load_run(generation, individual, run_name=None, engines=None, results_path="Results"):
     if engines is None and run_name is None:
         raise ValueError("Must input a non-None string for either engines or run_name.")

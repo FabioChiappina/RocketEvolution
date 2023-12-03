@@ -2,6 +2,8 @@ from turtle import Turtle, Screen
 import time
 from math import pi, cos, sin, atan2, sqrt
 from matplotlib import pyplot as plt
+import matplotlib.animation as animation
+from matplotlib.animation import PillowWriter
 import numpy as np
 import os
 import json
@@ -14,21 +16,7 @@ import file_manager
 # simulation_data dictionary should have the following fields:
 # position_x_true, position_y_true, angular_position_true, angular_velocity_true, altitude_sensor_readings, speed_sensor_readings, angular_position_sensor_readings, angular_velocity_sensor_readings, altitude_sensor_readings_scaled, speed_sensor_readings_scaled, angular_position_sensor_readings_scaled, angular_velocity_sensor_readings_scaled, engine_thrusts, thrust_vectors, fuel_masses
 def visualize_simulation_from_data(simulation_data, engine_names=["BullyEngine", "PatientEngine", "GreedyEngine", "UpSteeringEngine", "DownSteeringEngine"], save=True):
-    position_x_true = simulation_data["position_x_true"]
-    position_y_true = simulation_data["position_y_true"]
-    angular_position_true = simulation_data["angular_position_true"]
-    angular_velocity_true = simulation_data["angular_velocity_true"]
-    altitude_sensor_readings = simulation_data["altitude_sensor_readings"]
-    speed_sensor_readings = simulation_data["speed_sensor_readings"]
-    angular_position_sensor_readings = simulation_data["angular_position_sensor_readings"]
-    angular_velocity_sensor_readings = simulation_data["angular_velocity_sensor_readings"]
-    altitude_sensor_readings_scaled = simulation_data["altitude_sensor_readings_scaled"]
-    speed_sensor_readings_scaled = simulation_data["speed_sensor_readings_scaled"]
-    angular_position_sensor_readings_scaled = simulation_data["angular_position_sensor_readings_scaled"]
-    angular_velocity_sensor_readings_scaled = simulation_data["angular_velocity_sensor_readings_scaled"]
-    engine_thrusts = simulation_data["engine_thrusts"]
-    thrust_vectors = simulation_data["thrust_vectors"]
-    fuel_masses = simulation_data["fuel_masses"]
+    position_x_true, position_y_true, angular_position_true, angular_velocity_true, altitude_sensor_readings, speed_sensor_readings, angular_position_sensor_readings, angular_velocity_sensor_readings, altitude_sensor_readings_scaled, speed_sensor_readings_scaled, angular_position_sensor_readings_scaled, angular_velocity_sensor_readings_scaled, engine_thrusts, thrust_vectors, fuel_masses = file_manager.unpack_simulation_data(simulation_data)
 
     # Initialization parameters:
     SCREEN_WIDTH  = 1700 # m
@@ -140,6 +128,8 @@ def visualize_simulation_from_data(simulation_data, engine_names=["BullyEngine",
             time.sleep(2)
         iterator += 1
 
+    create_simulation_animation(simulation_data)
+    """
     plt.subplots(4,1)
     plt.subplot(4,1,1)
     plt.scatter(np.arange(len(altitude_sensor_readings)) * physics.TIMESTEP, altitude_sensor_readings, s=1)
@@ -177,6 +167,7 @@ def visualize_simulation_from_data(simulation_data, engine_names=["BullyEngine",
     plt.xlabel("Time (s)")
     plt.ylabel("Angular Velocity (Scaled)")
     plt.show()
+    """
 
 # Loads simulation data stored in a json file and displays that simulated data in an animation.
 def visualize_simulation_from_filename(simulation_data_filename, engine_names=["BullyEngine", "PatientEngine", "GreedyEngine", "UpSteeringEngine", "DownSteeringEngine"], save=False):
@@ -192,3 +183,41 @@ def visualize_simulation_from_filename(simulation_data_filename, engine_names=["
 def visualize_simulation_run(generation, individual, run_name=None, engines=None, results_path="Results", save=False):
     simulation_data, _, engine_names = file_manager.load_run(generation, individual, run_name, engines, results_path)
     visualize_simulation_from_data(simulation_data, engine_names, save)
+
+
+def create_simulation_animation(simulation_data):
+    position_x_true, position_y_true, angular_position_true, angular_velocity_true, altitude_sensor_readings, speed_sensor_readings, angular_position_sensor_readings, angular_velocity_sensor_readings, altitude_sensor_readings_scaled, speed_sensor_readings_scaled, angular_position_sensor_readings_scaled, angular_velocity_sensor_readings_scaled, engine_thrusts, thrust_vectors, fuel_masses = file_manager.unpack_simulation_data(simulation_data)
+    times = np.arange(len(position_x_true)) * physics.TIMESTEP
+    """
+    fig = plt.figure()
+    l, = plt.plot([], [], 'k-')
+    
+    writer = PillowWriter(fps=15)
+    plt.xlim(0, max(times))
+    plt.ylim(min(altitude_sensor_readings), max(altitude_sensor_readings))
+
+    x_list, y_list = [], []
+    with writer.saving(fig, "test.gif", 100):
+        for i, xval in enumerate(times):
+            x_list.append(xval)
+            y_list.append(altitude_sensor_readings[i])
+            l.set_data(x_list, y_list)
+            writer.grab_frame()
+    """
+    def update_wrapper(title, x_label, y_label):
+        def update(frame):
+            plt.clf()
+            plt.scatter(x[:frame], y[:frame], s=1.0, c='blue', marker='o')
+            plt.xlim(0, max(x))
+            plt.ylim(min(y), max(y))
+            plt.title(title)
+            plt.xlabel(x_label)
+            plt.ylabel(y_label)
+        return update
+
+    x = times
+    y = altitude_sensor_readings_scaled
+    fig, ax = plt.subplots()
+    ani = animation.FuncAnimation(fig, update_wrapper("Altitude Sensor", "Time (s)", "Altitude (Scaled)"), frames=len(x), interval=1, repeat=False)
+    ani.save('scatter_animation.gif', writer='pillow', fps=60)
+    plt.show()
