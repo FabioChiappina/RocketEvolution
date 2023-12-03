@@ -6,8 +6,6 @@ import external_control
 import controllers
 import file_manager
 
-# TODO -- now that I'm returning fuel and thrust percentages, should make cool animated graphs for thrust amounts per engine and for fuel amount. Could be a single animated subplot 3x2 (4 ssensors, one engine thrusts, one fuel)
-
 POPULATION_SIZE = 2 # TODO -- increase
 GENERATIONS = 2     # TODO -- increase
 GENERATION_COUNTER = 0

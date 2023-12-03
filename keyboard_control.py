@@ -42,7 +42,7 @@ def draw_arrow(arrow_turtle, length, angle_degrees, color="red"):
 
 # Define the names of the engines to be included in this simulation:
 engine_names = ["BullyEngine", "PatientEngine", "GreedyEngine", "UpSteeringEngine", "DownSteeringEngine"]
-engine_colors_dictionary = {"GreedyEngine":"indigo", "PatientEngine":"dim gray", "BullyEngine":"navy", "UpSteeringEngine":"black", "DownSteeringEngine":"black"}
+engine_colors_dictionary = {"GreedyEngine":"dark orchid", "PatientEngine":"dark orange", "BullyEngine":"medium blue", "UpSteeringEngine":"dim gray", "DownSteeringEngine":"black"}
 engine_graphic_sizes_dictionary = {"GreedyEngine":0.25, "PatientEngine":0.325, "BullyEngine":0.4, "UpSteeringEngine":0.1, "DownSteeringEngine":0.1}
 engine_graphics_offsets_dictionary = {"GreedyEngine":-0.3, "PatientEngine":-0.4, "BullyEngine":-0.6, "UpSteeringEngine":0.3, "DownSteeringEngine":0.3}
 engine_graphics = []
