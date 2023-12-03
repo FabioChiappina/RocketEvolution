@@ -118,4 +118,4 @@ def load_run(generation, individual, run_name=None, engines=None, results_path="
         simulation_data = json.load(json_file)
     controller = controllers.Controller.load(os.path.join(individual_path, "controller.json"))
     engine_names = get_engine_names_from_code(os.path.dirname(os.path.dirname(individual_path)).split("_")[0])
-    return simulation_data, controller, engine_names
+    return simulation_data, controller, engine_names, individual_path

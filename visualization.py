@@ -1,4 +1,7 @@
+import turtle
 from turtle import Turtle, Screen
+from PIL import Image
+import imageio
 import time
 from math import pi, cos, sin, atan2, sqrt
 from matplotlib import pyplot as plt
@@ -15,7 +18,7 @@ import file_manager
 # Creates and displays a visual of the simulation whose data is given by the input simulation_data dictionary.
 # simulation_data dictionary should have the following fields:
 # position_x_true, position_y_true, angular_position_true, angular_velocity_true, altitude_sensor_readings, speed_sensor_readings, angular_position_sensor_readings, angular_velocity_sensor_readings, altitude_sensor_readings_scaled, speed_sensor_readings_scaled, angular_position_sensor_readings_scaled, angular_velocity_sensor_readings_scaled, engine_thrusts, thrust_vectors, fuel_masses
-def visualize_simulation_from_data(simulation_data, engine_names=["BullyEngine", "PatientEngine", "GreedyEngine", "UpSteeringEngine", "DownSteeringEngine"], show_details=False, save=True):
+def visualize_simulation_from_data(simulation_data, engine_names=["BullyEngine", "PatientEngine", "GreedyEngine", "UpSteeringEngine", "DownSteeringEngine"], show_details=False, save_path=None):
     position_x_true, position_y_true, angular_position_true, angular_velocity_true, altitude_sensor_readings, speed_sensor_readings, angular_position_sensor_readings, angular_velocity_sensor_readings, altitude_sensor_readings_scaled, speed_sensor_readings_scaled, angular_position_sensor_readings_scaled, angular_velocity_sensor_readings_scaled, engine_thrusts, thrust_vectors, fuel_masses = file_manager.unpack_simulation_data(simulation_data)
 
     # Initialization parameters:
@@ -97,6 +100,7 @@ def visualize_simulation_from_data(simulation_data, engine_names=["BullyEngine",
     # Using data obtained from the physics simulation, recreate that data in the graphics simulation:
     crashed = False
     iterator = 0
+    video_images = []
     while not crashed:
         screen.update()
         rocket_graphic.goto(position_x_true[iterator], position_y_true[iterator])
@@ -140,27 +144,39 @@ def visualize_simulation_from_data(simulation_data, engine_names=["BullyEngine",
             crashed = True
             time.sleep(2)
         iterator += 1
+        # Update the saving mp4 file:
+        if save_path is not None:
+            if not os.path.exists(os.path.join(save_path, "Frames")):
+                os.mkdir(os.path.join(save_path, "Frames"))
+            frame_filename = os.path.join(save_path, "Frames", f"frame_{iterator:06d}.eps")
+            turtle.getcanvas().postscript(file=frame_filename, colormode='color')
+            frame_image = Image.open(frame_filename)
+            video_images.append(frame_image)
+            if iterator > 1:
+                frame_image.close()
 
     # Create an animation showing simulation statistics
-    create_simulation_animation(simulation_data, engine_names)
+    if save_path is not None:
+        video_images[0].save(os.path.join(save_path, "visualization_top.mp4"), save_all=True, append_images=video_images[1:], loop=0, duration=100)
+        create_simulation_animation(simulation_data, engine_names, save_path)
 
 # Loads simulation data stored in a json file and displays that simulated data in an animation.
-def visualize_simulation_from_filename(simulation_data_filename, engine_names=["BullyEngine", "PatientEngine", "GreedyEngine", "UpSteeringEngine", "DownSteeringEngine"], show_details=False, save=False):
+def visualize_simulation_from_filename(simulation_data_filename, engine_names=["BullyEngine", "PatientEngine", "GreedyEngine", "UpSteeringEngine", "DownSteeringEngine"], show_details=False, save_path=None):
     if not (simulation_data_filename.endswith("run_data.json")):
         simulation_data_filename = os.path.join(simulation_data_filename, "run_data.json")
     if not (simulation_data_filename.endswith(".json")) and "." not in os.path.basename(simulation_data_filename):
         simulation_data_filename += ".json"
     with open(simulation_data_filename, 'r') as json_file:
         simulation_data = json.load(json_file)
-    visualize_simulation_from_data(simulation_data, engine_names, show_details, save)
+    visualize_simulation_from_data(simulation_data, engine_names, show_details, save_path)
 
 # Loads simulation data from an input individual within an input generation and with the specified run name.
-def visualize_simulation_run(generation, individual, run_name=None, engines=None, results_path="Results", show_details=False, save=False):
-    simulation_data, _, engine_names = file_manager.load_run(generation, individual, run_name, engines, results_path)
-    visualize_simulation_from_data(simulation_data, engine_names, show_details, save)
+def visualize_simulation_run(generation, individual, run_name=None, engines=None, results_path="Results", show_details=False, save=True):
+    simulation_data, _, engine_names, individual_save_path = file_manager.load_run(generation, individual, run_name, engines, results_path)
+    visualize_simulation_from_data(simulation_data, engine_names, show_details, None if ((not save) or save is None) else individual_save_path)
 
 # Creates an animation of all sensor readings, fuel mass, and engine thrusts over the simulation time.
-def create_simulation_animation(simulation_data, engine_names):
+def create_simulation_animation(simulation_data, engine_names, save_path):
     position_x_true, _, _, _, _, _, _, _, altitude_sensor_readings_scaled, speed_sensor_readings_scaled, angular_position_sensor_readings_scaled, angular_velocity_sensor_readings_scaled, engine_thrusts, _, fuel_masses = file_manager.unpack_simulation_data(simulation_data)
     times = np.arange(len(position_x_true)) * physics.TIMESTEP
     def animation_update_wrapper(axes, times, sensor_readings_list, sensor_titles_list, sensor_x_labels_list, sensor_y_labels_list, fuel_masses, engine_thrusts):
@@ -178,7 +194,7 @@ def create_simulation_animation(simulation_data, engine_names):
             ax.clear()
             ax.scatter(x[:frame], y[:frame], s=1.0, c='green', marker='o')
             ax.set_xlim(0, max(x))
-            ax.set_ylim(min(y), max(y))
+            ax.set_ylim(0, 1)
             ax.set_title(title)
             ax.set_xlabel(x_label)
             ax.set_ylabel(y_label)
@@ -203,12 +219,12 @@ def create_simulation_animation(simulation_data, engine_names):
             ax.set_ylim(0, 100)
         return engine_update
 
-    fig, axes = plt.subplots(2, 3, figsize=(14, 7))
+    fig, axes = plt.subplots(2, 3, figsize=(17, 6.5))
     sensor_readings = [
-        (altitude_sensor_readings_scaled, "Altitude Sensor Readings (Scaled)", "", ""),
-        (speed_sensor_readings_scaled, "Speed Sensor Readings (Scaled)", "", ""),
-        (angular_position_sensor_readings_scaled, "Angular Position Sensor Readings (Scaled)", "Time (s)", ""),
-        (angular_velocity_sensor_readings_scaled, "Angular Velocity Sensor Readings (Scaled)", "Time (s)", "")
+        (altitude_sensor_readings_scaled, "Altitude Sensor Readings (0-1 Scaled)", "", ""),
+        (speed_sensor_readings_scaled, "Speed Sensor Readings (0-1 Scaled)", "", ""),
+        (angular_position_sensor_readings_scaled, "Angular Position Sensor Readings (0-1 Scaled)", "Time (s)", ""),
+        (angular_velocity_sensor_readings_scaled, "Angular Velocity Sensor Readings (0-1 Scaled)", "Time (s)", "")
     ]
     axes = [axes[0,0], axes[0,1], axes[1,0], axes[1,1], axes[0,2], axes[1,2]]
     sensor_readings_list = [var[0] for var in sensor_readings]
@@ -216,4 +232,4 @@ def create_simulation_animation(simulation_data, engine_names):
     sensor_x_labels_list = [var[2] for var in sensor_readings]
     sensor_y_labels_list = [var[3] for var in sensor_readings]
     data_animation = animation.FuncAnimation(fig, animation_update_wrapper(axes, times, sensor_readings_list, sensor_titles_list, sensor_x_labels_list, sensor_y_labels_list, 100*np.array(fuel_masses), 100*np.array(engine_thrusts)), frames=len(times), interval=1, repeat=False)
-    data_animation.save('scatter_animation.mp4', writer=animation.FFMpegWriter(fps=60, codec="libx264", extra_args=["-pix_fmt", "yuv420p"]))
+    data_animation.save(os.path.join(save_path,'visualization.mp4'), writer=animation.FFMpegWriter(fps=60, codec="libx264", extra_args=["-pix_fmt", "yuv420p"]))
