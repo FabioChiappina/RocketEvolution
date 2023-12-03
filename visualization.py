@@ -8,6 +8,7 @@ import json
 
 import physics
 import rockets
+import file_manager
 
 # Creates and displays a visual of the simulation whose data is given by the input simulation_data dictionary.
 # simulation_data dictionary should have the following fields:
@@ -30,8 +31,8 @@ def visualize_simulation_from_data(simulation_data, engine_names=["BullyEngine",
     fuel_masses = simulation_data["fuel_masses"]
 
     # Initialization parameters:
-    SCREEN_WIDTH  = 1500 # m
-    SCREEN_HEIGHT = 400  # m
+    SCREEN_WIDTH  = 1700 # m
+    SCREEN_HEIGHT = 450  # m
     ROCKET_WIDTH_TO_LENGTH_RATIO = 0.2
     BASE_TURTLE_SQUARE_WIDTH = 20
 
@@ -177,6 +178,7 @@ def visualize_simulation_from_data(simulation_data, engine_names=["BullyEngine",
     plt.ylabel("Angular Velocity (Scaled)")
     plt.show()
 
+# Loads simulation data stored in a json file and displays that simulated data in an animation.
 def visualize_simulation_from_filename(simulation_data_filename, engine_names=["BullyEngine", "PatientEngine", "GreedyEngine", "UpSteeringEngine", "DownSteeringEngine"], save=False):
     if not (simulation_data_filename.endswith("run_data.json")):
         simulation_data_filename = os.path.join(simulation_data_filename, "run_data.json")
@@ -185,5 +187,8 @@ def visualize_simulation_from_filename(simulation_data_filename, engine_names=["
     with open(simulation_data_filename, 'r') as json_file:
         simulation_data = json.load(json_file)
     visualize_simulation_from_data(simulation_data, engine_names, save)
-    
-    
+
+# Loads simulation data from an input individual within an input generation and with the specified run name.
+def visualize_simulation_run(generation, individual, run_name=None, engines=None, results_path="Results", save=False):
+    simulation_data, _, engine_names = file_manager.load_run(generation, individual, run_name, engines, results_path)
+    visualize_simulation_from_data(simulation_data, engine_names, save)
