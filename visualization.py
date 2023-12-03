@@ -1,6 +1,6 @@
 import turtle
 from turtle import Turtle, Screen
-from PIL import Image
+from PIL import Image, ImageGrab
 import imageio
 import time
 from math import pi, cos, sin, atan2, sqrt
@@ -100,7 +100,6 @@ def visualize_simulation_from_data(simulation_data, engine_names=["BullyEngine",
     # Using data obtained from the physics simulation, recreate that data in the graphics simulation:
     crashed = False
     iterator = 0
-    video_images = []
     while not crashed:
         screen.update()
         rocket_graphic.goto(position_x_true[iterator], position_y_true[iterator])
@@ -146,18 +145,9 @@ def visualize_simulation_from_data(simulation_data, engine_names=["BullyEngine",
         iterator += 1
         # Update the saving mp4 file:
         if save_path is not None:
-            if not os.path.exists(os.path.join(save_path, "Frames")):
-                os.mkdir(os.path.join(save_path, "Frames"))
-            frame_filename = os.path.join(save_path, "Frames", f"frame_{iterator:06d}.eps")
-            turtle.getcanvas().postscript(file=frame_filename, colormode='color')
-            frame_image = Image.open(frame_filename)
-            video_images.append(frame_image)
-            if iterator > 1:
-                frame_image.close()
-
+            pass
     # Create an animation showing simulation statistics
     if save_path is not None:
-        video_images[0].save(os.path.join(save_path, "visualization_top.mp4"), save_all=True, append_images=video_images[1:], loop=0, duration=100)
         create_simulation_animation(simulation_data, engine_names, save_path)
 
 # Loads simulation data stored in a json file and displays that simulated data in an animation.
