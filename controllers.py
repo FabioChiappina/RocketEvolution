@@ -4,17 +4,18 @@ import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 
+# TODO try only one hidden layer, maybe bigger like size 64?
 # A class defining a rocket engine controller that uses sensors (e.g., position, speed, orientation, ...), engine thrusting percentages, and fuel mass to determine which of its engines it should fire at any given time.
 class Controller:
-    # TODO -- change to [16,8] from [5,5], probably necessary to get more complex behaviors
-    def __init__(self, n_sensors=4, n_engines=0, hidden_layer_sizes=[16,8], verbose=False, model=None):
+    # NOTE -- changed to [16,8] from [5,5], probably necessary to get more complex behaviors. Could also try [64]
+    def __init__(self, n_sensors=4, n_engines=0, hidden_layer_sizes=[32], verbose=False, model=None):
         self.n_sensors = n_sensors
         self.n_engines = n_engines
         if model is None:
             model = keras.Sequential()
             model.add(keras.Input(shape=(None,self.n_sensors+self.n_engines+1)))
             for ls in hidden_layer_sizes:
-                model.add(layers.Dense(ls))
+                model.add(layers.Dense(ls, activation="relu")) # TODO try activation relu?
             model.add(layers.Dense(n_engines, activation="sigmoid")) 
             model.compile()
         else:

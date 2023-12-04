@@ -94,9 +94,8 @@ def visualize_simulation_from_data(simulation_data, engine_names=["BullyEngine",
         engine_summary.write(f'Range: {(0)}', align='left', font=('Courier', 34, 'bold'))
 
     # Using data obtained from the physics simulation, recreate that data in the graphics simulation:
-    crashed = False
     iterator = 0
-    while not crashed:
+    while iterator < len(position_x_true):
         screen.update()
         rocket_graphic.goto(position_x_true[iterator], position_y_true[iterator])
         rocket_graphic.setheading(angular_position_true[iterator] * 180/pi)
@@ -126,22 +125,20 @@ def visualize_simulation_from_data(simulation_data, engine_names=["BullyEngine",
         # Update the text display
         if show_details:
             engine_summary.clear()
-            engine_summary.write(f'Range: {round(rocket_graphic.xcor(),2)}\nGreedy Engine: {(round(float(engine_thrusts[iterator][engine_names.index("GreedyEngine")]),2) if "GreedyEngine" in engine_names else "---")}\nPatient Engine: {(round(float(engine_thrusts[iterator][engine_names.index("PatientEngine")]),2) if "PatientEngine" in engine_names else "---")}\nBully Engine: {(round(float(engine_thrusts[iterator][engine_names.index("BullyEngine")]),2) if "BullyEngine" in engine_names else "---")}\nUp-Steering Engine: {(round(float(engine_thrusts[iterator][engine_names.index("UpSteeringEngine")]),2) if "UpSteeringEngine" in engine_names else "---")}\nDown-Steering Engine: {(round(float(engine_thrusts[iterator][engine_names.index("DownSteeringEngine")]),2) if "DownSteeringEngine" in engine_names else "---")}', align='left', font=('Courier', 14, 'normal'))
+            engine_summary.write(f'Range: {round(position_x_true[iterator],2)}\nGreedy Engine: {(round(float(engine_thrusts[iterator][engine_names.index("GreedyEngine")]),2) if "GreedyEngine" in engine_names else "---")}\nPatient Engine: {(round(float(engine_thrusts[iterator][engine_names.index("PatientEngine")]),2) if "PatientEngine" in engine_names else "---")}\nBully Engine: {(round(float(engine_thrusts[iterator][engine_names.index("BullyEngine")]),2) if "BullyEngine" in engine_names else "---")}\nUp-Steering Engine: {(round(float(engine_thrusts[iterator][engine_names.index("UpSteeringEngine")]),2) if "UpSteeringEngine" in engine_names else "---")}\nDown-Steering Engine: {(round(float(engine_thrusts[iterator][engine_names.index("DownSteeringEngine")]),2) if "DownSteeringEngine" in engine_names else "---")}', align='left', font=('Courier', 14, 'normal'))
             if iterator % 5 == 0:
                 sensor_summary.clear()
                 sensor_summary.write(f'Altitude Sensor: {round(altitude_sensor_readings[iterator],2)}\nSpeed Sensor: {round(speed_sensor_readings[iterator],2)}\nAngular Position Sensor: {round(angular_position_sensor_readings[iterator],2)}\nAngular Velocity Sensor: {round(angular_velocity_sensor_readings[iterator],2)}', align='left', font=('Courier', 14, 'normal'))
         else:
             if iterator % 2 == 0:
                 engine_summary.clear()
-                engine_summary.write(f'Range: {round(rocket_graphic.xcor(),2)}', align='left', font=('Courier', 34, 'bold'))
-        # Update global states (whether the rocket has crashed, whether it has run out of fuel):
-        if rocket_graphic.ycor() <= 0:
-            crashed = True
-            time.sleep(2)
+                engine_summary.write(f'Range: {round(position_x_true[iterator],2)}', align='left', font=('Courier', 34, 'bold'))
         iterator += 1
         # Update the saving mp4 file:
         if save_path is not None:
             pass
+    screen.update()
+    time.sleep(0.5)
     # Create an animation showing simulation statistics
     if save_path is not None:
         create_simulation_animation(simulation_data, engine_names, save_path)

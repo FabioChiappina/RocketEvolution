@@ -2,8 +2,8 @@ import physics
 from math import sin, cos, pi, log
 import numpy as np
 
-SCALER_ALTITUDE_SENSOR = 500 # m
-SCALER_SPEED_SENSOR = 225 # m/s
+SCALER_ALTITUDE_SENSOR = 600 # m    # NOTE changed from 500
+SCALER_SPEED_SENSOR = 250 # m/s     # NOTE changed from 225
 SCALER_ANGULAR_POSITION_SENSOR = 2*pi # radians
 SCALER_ANGULAR_VELOCITY_SENSOR = 3*pi # radians/s
 
@@ -15,7 +15,7 @@ class Engine:
     DEFAULT_EFFICIENCY=1
     DEFAULT_ANGLE_VARIANCE=1
     DEFAULT_POSITION_ON_FUSELAGE=0 # X-distance from rear-end of rocket, as a ratio of 0-1 (0=rear end, 1=front end)
-    MAX_THRUST_ANGLE_VARIANCE=1*pi/18000 # In radians, equivalent to 1/50 degrees
+    MAX_THRUST_ANGLE_VARIANCE=1*pi/18000 # In radians, equivalent to 1e-3 degrees
     def __init__(self, name=DEFAULT_NAME, mass=DEFAULT_MASS, maximum_thrust=DEFAULT_MAXIMUM_THRUST, time_to_max_thrust=DEFAULT_TIME_TO_MAX_THRUST, efficiency=DEFAULT_EFFICIENCY, angle_variance=DEFAULT_ANGLE_VARIANCE, position_on_fuselage=DEFAULT_POSITION_ON_FUSELAGE, thrusting=False, current_thrust_ratio=0, current_thrust_angle=0):
         self.name=name
         self.mass = mass

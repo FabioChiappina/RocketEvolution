@@ -6,7 +6,7 @@ import statistics
 import argparse
 import os
 
-DEFAULT_RUN_NAME = "-PGUD_run002"   # Previously "BPGUD_run006"
+DEFAULT_RUN_NAME = "-P-UD_run003"   # Previously "BPGUD_run006", then "-PGUD_run002"
 
 def single(generation, individual, run_name=DEFAULT_RUN_NAME):
     visualization.visualize_simulation_run(generation=generation, individual=individual, run_name=run_name)
@@ -33,10 +33,15 @@ def fitness(run_name=DEFAULT_RUN_NAME):
     generation_path, _ = file_manager.find_path(generation=0, individual=1, run_name=run_name)
     run_path = os.path.dirname(generation_path)
     fitnesses = []
+    generations = []
     for generation_path in os.listdir(run_path):
         if "store" in generation_path.lower():
             continue
+        generations.append(int(os.path.basename(generation_path)))
         fitnesses.append(get_generation_fitnesses(int(os.path.basename(generation_path)), run_name))
+
+    sorted_fitnesses = sorted(list(zip(generations, fitnesses)), key=lambda x: x[0])
+    fitnesses = [fit[1] for fit in sorted_fitnesses]
     plt.boxplot(fitnesses, positions=list(range(len(fitnesses))), vert=True, patch_artist=True, boxprops={"facecolor":"yellow"})
     plt.xlabel('Generation')
     plt.ylabel('Fitness')

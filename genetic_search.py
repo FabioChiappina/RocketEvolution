@@ -1,6 +1,7 @@
 import keras_genetic
 import os
 import json
+import numpy as np
 
 import external_control
 import controllers
@@ -24,8 +25,45 @@ def controller_fitness_wrapper(engine_names, controller, run_save_path):
         else:
             INDIVIDUAL_COUNTER += 1
         # Run the physics simulation: 
-        (position_x_true, position_y_true, angular_position_true, angular_velocity_true), (altitude_sensor_readings, speed_sensor_readings, angular_position_sensor_readings, angular_velocity_sensor_readings), (altitude_sensor_readings_scaled, speed_sensor_readings_scaled, angular_position_sensor_readings_scaled, angular_velocity_sensor_readings_scaled), engine_thrusts, thrust_vectors, fuel_masses = external_control.simulate_physics(engine_names, controller)
-        fitness = position_x_true[-1]
+        n_repeats = 3 # How many times the fitness simulation should be re-run for a single individual's fitness. The median fitness value is what is kept.
+        fitnesses = []
+        position_x_true_list, position_y_true_list, angular_position_true_list, angular_velocity_true_list, altitude_sensor_readings_list, speed_sensor_readings_list, angular_position_sensor_readings_list, angular_velocity_sensor_readings_list, altitude_sensor_readings_scaled_list, speed_sensor_readings_scaled_list, angular_position_sensor_readings_scaled_list, angular_velocity_sensor_readings_scaled_list, engine_thrusts_list, thrust_vectors_list, fuel_masses_list = [], [], [], [], [], [], [], [], [], [], [], [], [], [], []
+        for nr in range(n_repeats):
+            (position_x_true, position_y_true, angular_position_true, angular_velocity_true), (altitude_sensor_readings, speed_sensor_readings, angular_position_sensor_readings, angular_velocity_sensor_readings), (altitude_sensor_readings_scaled, speed_sensor_readings_scaled, angular_position_sensor_readings_scaled, angular_velocity_sensor_readings_scaled), engine_thrusts, thrust_vectors, fuel_masses = external_control.simulate_physics(engine_names, controller)
+            fitness = position_x_true[-1]
+            fitnesses.append(fitness)
+            position_x_true_list.append(position_x_true)
+            position_y_true_list.append(position_y_true)
+            angular_position_true_list.append(angular_position_true)
+            angular_velocity_true_list.append(angular_velocity_true)
+            altitude_sensor_readings_list.append(altitude_sensor_readings) 
+            speed_sensor_readings_list.append(speed_sensor_readings)
+            angular_position_sensor_readings_list.append(angular_position_sensor_readings)
+            angular_velocity_sensor_readings_list.append(angular_velocity_sensor_readings)
+            altitude_sensor_readings_scaled_list.append(altitude_sensor_readings_scaled)
+            speed_sensor_readings_scaled_list.append(speed_sensor_readings_scaled)
+            angular_position_sensor_readings_scaled_list.append(angular_position_sensor_readings_scaled)
+            angular_velocity_sensor_readings_scaled_list.append(angular_velocity_sensor_readings_scaled)
+            engine_thrusts_list.append(engine_thrusts)
+            thrust_vectors_list.append(thrust_vectors)
+            fuel_masses_list.append(fuel_masses)
+        median_fitness_index = np.argsort(fitnesses)[len(fitnesses)//2]
+        position_x_true = position_x_true_list[median_fitness_index]
+        position_y_true = position_y_true_list[median_fitness_index]
+        angular_position_true = angular_position_true_list[median_fitness_index]
+        angular_velocity_true = angular_velocity_true_list[median_fitness_index]
+        altitude_sensor_readings = altitude_sensor_readings_list[median_fitness_index]
+        speed_sensor_readings = speed_sensor_readings_list[median_fitness_index]
+        angular_position_sensor_readings = angular_position_sensor_readings_list[median_fitness_index]
+        angular_velocity_sensor_readings = angular_velocity_sensor_readings_list[median_fitness_index]
+        altitude_sensor_readings_scaled = altitude_sensor_readings_scaled_list[median_fitness_index]
+        speed_sensor_readings_scaled = speed_sensor_readings_scaled_list[median_fitness_index]
+        angular_position_sensor_readings_scaled = angular_position_sensor_readings_scaled_list[median_fitness_index]
+        angular_velocity_sensor_readings_scaled = angular_velocity_sensor_readings_scaled_list[median_fitness_index]
+        engine_thrusts = engine_thrusts_list[median_fitness_index]
+        thrust_vectors = thrust_vectors_list[median_fitness_index]
+        fuel_masses = fuel_masses_list[median_fitness_index]
+        fitness = fitnesses[median_fitness_index]
         # Save the data to the appropriate folder:
         if run_save_path is not None:
             save_path = run_save_path
@@ -66,6 +104,7 @@ def controller_fitness_wrapper(engine_names, controller, run_save_path):
     return controller_fitness
 
 # Perform the genetic algorithm to find "good" model weights
+# NOTE -- tried keras_genetic.breeder.MutationBreeder(), now trying keras_genetic.breeder.RandomWeightBreeder(model, parents_per_generation=3
 def search(engine_names, controller, generations=100, population_size=50, n_parents_from_population=4, return_best=2, save_path=None):
     # Configure the saving of results to the proper folder
     engine_code = file_manager.get_code_from_engine_names(engine_names)
@@ -90,7 +129,7 @@ def search(engine_names, controller, generations=100, population_size=50, n_pare
         evaluator=controller_fitness_wrapper(engine_names, controller, save_path),
         generations=generations,
         population_size=population_size,
-        breeder=keras_genetic.breeder.MutationBreeder(),
+        breeder=keras_genetic.breeder.MutationBreeder(), # TODO -- could use keras_genetic.breeder.NParentMutationBreeder(n=3)
         n_parents_from_population=n_parents_from_population,
         return_best=return_best,
     )
@@ -99,7 +138,7 @@ def search(engine_names, controller, generations=100, population_size=50, n_pare
     return model, controller
 
 # Example:
-engine_names = ["PatientEngine", "GreedyEngine", "UpSteeringEngine", "DownSteeringEngine"] # NOTE: removed bully engine
+engine_names = ["PatientEngine", "UpSteeringEngine", "DownSteeringEngine"] # NOTE: removed bully engine and greedy engine
 # Define the Controller algorithm that will decide when to turn on/off each engine.
 controller = controllers.Controller(n_engines=len(engine_names))
 # Run the evolutionary search
