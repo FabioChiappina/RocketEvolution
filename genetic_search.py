@@ -6,8 +6,8 @@ import external_control
 import controllers
 import file_manager
 
-POPULATION_SIZE = 2 # TODO -- increase
-GENERATIONS = 2     # TODO -- increase
+POPULATION_SIZE = 100 
+GENERATIONS = 250     
 GENERATION_COUNTER = 0
 INDIVIDUAL_COUNTER = 0
 
@@ -36,7 +36,7 @@ def controller_fitness_wrapper(engine_names, controller, run_save_path):
                 save_path = os.path.join(save_path, generation_string)
                 if not os.path.exists(save_path):
                     os.mkdir(save_path)
-            individual_string = "0"*(5-len(str(round(fitness))))+str(round(fitness)) + "-" + "0"*(4-len(str(INDIVIDUAL_COUNTER)))+str(INDIVIDUAL_COUNTER)
+            individual_string = "0"*(5-len(str(round(fitness))))+str(round(fitness)) + "_" + "0"*(4-len(str(INDIVIDUAL_COUNTER)))+str(INDIVIDUAL_COUNTER)
             if not os.path.basename(save_path)==individual_string:
                 if not os.path.exists(save_path):
                     os.mkdir(save_path)
@@ -99,7 +99,7 @@ def search(engine_names, controller, generations=100, population_size=50, n_pare
     return model, controller
 
 # Example:
-engine_names = ["BullyEngine", "PatientEngine", "GreedyEngine", "UpSteeringEngine", "DownSteeringEngine"]
+engine_names = ["PatientEngine", "GreedyEngine", "UpSteeringEngine", "DownSteeringEngine"] # NOTE: removed bully engine
 # Define the Controller algorithm that will decide when to turn on/off each engine.
 controller = controllers.Controller(n_engines=len(engine_names))
 # Run the evolutionary search

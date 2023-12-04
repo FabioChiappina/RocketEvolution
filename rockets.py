@@ -75,7 +75,7 @@ class GreedyEngine(Engine):
     name = "GreedyEngine"
     mass = 125
     maximum_thrust = 40000
-    time_to_max_thrust = 1.5
+    time_to_max_thrust = 1
     efficiency = 0.4
     angle_variance = 0.4
     position_on_fuselage = 0
@@ -86,7 +86,7 @@ class GreedyEngine(Engine):
 class PatientEngine(Engine):
     name = "PatientEngine"
     mass = 250
-    maximum_thrust = 50000
+    maximum_thrust = 65000
     time_to_max_thrust = 6
     efficiency = 0.99
     angle_variance = 0.15
@@ -97,10 +97,10 @@ class PatientEngine(Engine):
 
 class BullyEngine(Engine):
     name = "BullyEngine"
-    mass = 350
-    maximum_thrust = 150000
+    mass = 400
+    maximum_thrust = 120000
     time_to_max_thrust = 3
-    efficiency = 0.7
+    efficiency = 0.65
     angle_variance = 1
     position_on_fuselage = 0
 
@@ -110,8 +110,8 @@ class BullyEngine(Engine):
 class UpSteeringEngine(Engine):
     name = "UpSteeringEngine"
     mass = 80
-    maximum_thrust = 8000
-    time_to_max_thrust = 0.5
+    maximum_thrust = 12000
+    time_to_max_thrust = 0.4
     efficiency = 0.9
     angle_variance = 0.1
     position_on_fuselage = 0.9
@@ -122,8 +122,8 @@ class UpSteeringEngine(Engine):
 class DownSteeringEngine(Engine):
     name = "DownSteeringEngine"
     mass = 80
-    maximum_thrust = 8000
-    time_to_max_thrust = 0.5
+    maximum_thrust = 12000
+    time_to_max_thrust = 0.4
     efficiency = 0.9
     angle_variance = 0.1
     position_on_fuselage = 0.9
@@ -161,13 +161,13 @@ class Rocket:
     def true_speed(self):
         return np.sqrt(self.velocity_x**2 + self.velocity_y**2)
     
-    def altitude_sensor(self, sigma=3):
+    def altitude_sensor(self, sigma=4):
         return self.position_y + np.random.normal(0, sigma, 1)[0]
     
     def speed_sensor(self, sigma=3):
         return self.true_speed() + np.random.normal(0, sigma, 1)[0]
     
-    def angular_position_sensor(self, sigma=0.5):
+    def angular_position_sensor(self, sigma=0.4):
         return self.angular_position + np.random.normal(0, sigma, 1)[0]
     
     def angular_velocity_sensor(self, sigma=0.5):

@@ -6,7 +6,8 @@ from tensorflow.keras import layers
 
 # A class defining a rocket engine controller that uses sensors (e.g., position, speed, orientation, ...), engine thrusting percentages, and fuel mass to determine which of its engines it should fire at any given time.
 class Controller:
-    def __init__(self, n_sensors=4, n_engines=0, hidden_layer_sizes=[5,5], verbose=False, model=None):
+    # TODO -- change to [16,8] from [5,5], probably necessary to get more complex behaviors
+    def __init__(self, n_sensors=4, n_engines=0, hidden_layer_sizes=[16,8], verbose=False, model=None):
         self.n_sensors = n_sensors
         self.n_engines = n_engines
         if model is None:

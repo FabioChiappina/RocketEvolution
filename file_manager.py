@@ -76,8 +76,8 @@ def unpack_simulation_data(simulation_data):
     fuel_masses = simulation_data["fuel_masses"]
     return position_x_true, position_y_true, angular_position_true, angular_velocity_true, altitude_sensor_readings, speed_sensor_readings, angular_position_sensor_readings, angular_velocity_sensor_readings, altitude_sensor_readings_scaled, speed_sensor_readings_scaled, angular_position_sensor_readings_scaled, angular_velocity_sensor_readings_scaled, engine_thrusts, thrust_vectors, fuel_masses
 
-# Loads the simulation data, controller (keras model), and engine names for the run specified by generation/individual numbers and run name.
-def load_run(generation, individual, run_name=None, engines=None, results_path="Results"):
+# Finds the path to the specified generation and individual in the specified run.
+def find_path(generation, individual, run_name=None, engines=None, results_path="Results"):
     if engines is None and run_name is None:
         raise ValueError("Must input a non-None string for either engines or run_name.")
     if isinstance(run_name, str) and len(run_name.split("_"))==2 and is_engine_code(run_name.split("_")[0]):
@@ -102,20 +102,27 @@ def load_run(generation, individual, run_name=None, engines=None, results_path="
                 run_name = run_name.split("_")[1]
             run_name = int(run_name.replace("run", ""))
         run_path = engines+"_run" + "0"*(3-len(str(run_name))) + str(run_name)
-    run_path = os.path.join(results_path, run_path, "0"*(4-len(str(generation)))+str(generation))
+    generation_path = os.path.join(results_path, run_path, "0"*(4-len(str(generation)))+str(generation))
     individual_path = None
-    if not os.path.exists(run_path):
+    if not os.path.exists(generation_path):
         raise ValueError("The path specified by the run_name and/or engines and the generation number does not exist.")
-    for subfolder in os.listdir(run_path):
-        if "-" not in subfolder:
+    for subfolder in os.listdir(generation_path):
+        if "_" not in subfolder:
             continue
-        if int(subfolder.split("-")[1])==int(individual):
-            individual_path = os.path.join(run_path, subfolder)
+        if "Store" in subfolder:
+            continue
+        if int(subfolder.split("_")[1])==int(individual):
+            individual_path = os.path.join(generation_path, subfolder)
             break
     if individual_path is None:
         raise ValueError("Individual not found.")
+    return generation_path, individual_path
+
+# Loads the simulation data, controller (keras model), and engine names for the run specified by generation/individual numbers and run name.
+def load_run(generation, individual, run_name=None, engines=None, results_path="Results"):
+    generation_path, individual_path = find_path(generation, individual, run_name, engines, results_path)
     with open(os.path.join(individual_path, "run_data.json"), "r") as json_file:
         simulation_data = json.load(json_file)
     controller = controllers.Controller.load(os.path.join(individual_path, "controller.json"))
     engine_names = get_engine_names_from_code(os.path.dirname(os.path.dirname(individual_path)).split("_")[0])
-    return simulation_data, controller, engine_names, individual_path
+    return simulation_data, controller, engine_names, generation_path, individual_path

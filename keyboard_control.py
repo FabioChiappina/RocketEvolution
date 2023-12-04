@@ -8,7 +8,7 @@ import physics
 
 # Initialization parameters:
 SCREEN_WIDTH  = 1700 # m
-SCREEN_HEIGHT = 450  # m
+SCREEN_HEIGHT = 500  # m
 ROCKET_WIDTH_TO_LENGTH_RATIO = 0.2
 BASE_TURTLE_SQUARE_WIDTH = 20
 
