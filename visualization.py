@@ -14,7 +14,8 @@ import file_manager
 # Creates and displays a visual of the simulation whose data is given by the input simulation_data dictionary.
 # simulation_data dictionary should have the following fields:
 # position_x_true, position_y_true, angular_position_true, angular_velocity_true, altitude_sensor_readings, speed_sensor_readings, angular_position_sensor_readings, angular_velocity_sensor_readings, altitude_sensor_readings_scaled, speed_sensor_readings_scaled, angular_position_sensor_readings_scaled, angular_velocity_sensor_readings_scaled, engine_thrusts, thrust_vectors, fuel_masses
-def visualize_simulation_from_data(simulation_data, engine_names=["BullyEngine", "PatientEngine", "GreedyEngine", "UpSteeringEngine", "DownSteeringEngine"], show_details=False, details_offset=0, save_path=None):
+# clear -- if True, clears all objects from the screen at the end of the run.
+def visualize_simulation_from_data(simulation_data, engine_names=["BullyEngine", "PatientEngine", "GreedyEngine", "UpSteeringEngine", "DownSteeringEngine"], show_details=False, details_offset=0, save_path=None, clear=False):
     position_x_true, position_y_true, angular_position_true, angular_velocity_true, altitude_sensor_readings, speed_sensor_readings, angular_position_sensor_readings, angular_velocity_sensor_readings, altitude_sensor_readings_scaled, speed_sensor_readings_scaled, angular_position_sensor_readings_scaled, angular_velocity_sensor_readings_scaled, engine_thrusts, thrust_vectors, fuel_masses = file_manager.unpack_simulation_data(simulation_data)
 
     # Initialization parameters:
@@ -142,21 +143,23 @@ def visualize_simulation_from_data(simulation_data, engine_names=["BullyEngine",
     # Create an animation showing simulation statistics
     if save_path is not None:
         create_simulation_animation(simulation_data, engine_names, save_path)
+    if clear:
+        screen.clear()
 
 # Loads simulation data stored in a json file and displays that simulated data in an animation.
-def visualize_simulation_from_filename(simulation_data_filename, engine_names=["BullyEngine", "PatientEngine", "GreedyEngine", "UpSteeringEngine", "DownSteeringEngine"], show_details=False, details_offset=0, save_path=None):
+def visualize_simulation_from_filename(simulation_data_filename, engine_names=["BullyEngine", "PatientEngine", "GreedyEngine", "UpSteeringEngine", "DownSteeringEngine"], show_details=False, details_offset=0, save_path=None, clear=False):
     if not (simulation_data_filename.endswith("run_data.json")):
         simulation_data_filename = os.path.join(simulation_data_filename, "run_data.json")
     if not (simulation_data_filename.endswith(".json")) and "." not in os.path.basename(simulation_data_filename):
         simulation_data_filename += ".json"
     with open(simulation_data_filename, 'r') as json_file:
         simulation_data = json.load(json_file)
-    visualize_simulation_from_data(simulation_data, engine_names, show_details, details_offset, save_path)
+    visualize_simulation_from_data(simulation_data, engine_names, show_details, details_offset, save_path, clear=clear)
 
 # Loads simulation data from an input individual within an input generation and with the specified run name.
-def visualize_simulation_run(generation, individual, run_name=None, engines=None, results_path="Results", show_details=False, details_offset=0, save=True):
+def visualize_simulation_run(generation, individual, run_name=None, engines=None, results_path="Results", show_details=False, details_offset=0, save=True, clear=False):
     simulation_data, _, engine_names, generation_path, individual_save_path = file_manager.load_run(generation, individual, run_name, engines, results_path)
-    visualize_simulation_from_data(simulation_data, engine_names, show_details, details_offset, None if ((not save) or save is None) else individual_save_path)
+    visualize_simulation_from_data(simulation_data, engine_names, show_details, details_offset, None if ((not save) or save is None) else individual_save_path, clear=clear)
 
 # Creates an animation of all sensor readings, fuel mass, and engine thrusts over the simulation time.
 def create_simulation_animation(simulation_data, engine_names, save_path):

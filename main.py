@@ -1,23 +1,28 @@
 from matplotlib import pyplot as plt
 import visualization
 import file_manager
+import external_control
 
-import statistics
+import time
 import argparse
 import os
 
-DEFAULT_RUN_NAME = "-P-UD_run003"   # Previously "BPGUD_run006", then "-PGUD_run002"
 
-def single(generation, individual, run_name=DEFAULT_RUN_NAME):
-    visualization.visualize_simulation_run(generation=generation, individual=individual, run_name=run_name)
+# NOTE: Live demo-able command line call:
+# python3 main.py -f demo-no-graphs
 
-def complete(generation, run_name):
+DEFAULT_RUN_NAME = "-PGUD_run004"   # Previously "BPGUD_run006", then "-PGUD_run002", then "-P-UD_run003". The REAL ONE is "-P-UD_run004"
+
+def single(generation, individual, run_name=DEFAULT_RUN_NAME, save=True):
+    visualization.visualize_simulation_run(generation=generation, individual=individual, run_name=run_name, save=save)
+
+def complete(generation, run_name=DEFAULT_RUN_NAME, save=True):
     min_fitness_individual, first_quartile_fitness_individual, median_fitness_individual, third_quartile_fitness_individual, max_fitness_individual = summarize_generation(generation, run_name)
-    visualization.visualize_simulation_run(generation=generation, individual=min_fitness_individual, run_name=run_name)
-    visualization.visualize_simulation_run(generation=generation, individual=first_quartile_fitness_individual, run_name=run_name, details_offset=1)
-    visualization.visualize_simulation_run(generation=generation, individual=median_fitness_individual, run_name=run_name, details_offset=2)
-    visualization.visualize_simulation_run(generation=generation, individual=third_quartile_fitness_individual, run_name=run_name, details_offset=3)
-    visualization.visualize_simulation_run(generation=generation, individual=max_fitness_individual, run_name=run_name, details_offset=4)
+    visualization.visualize_simulation_run(generation=generation, individual=min_fitness_individual, run_name=run_name, save=save)
+    visualization.visualize_simulation_run(generation=generation, individual=first_quartile_fitness_individual, run_name=run_name, details_offset=1, save=save)
+    visualization.visualize_simulation_run(generation=generation, individual=median_fitness_individual, run_name=run_name, details_offset=2, save=save)
+    visualization.visualize_simulation_run(generation=generation, individual=third_quartile_fitness_individual, run_name=run_name, details_offset=3, save=save)
+    visualization.visualize_simulation_run(generation=generation, individual=max_fitness_individual, run_name=run_name, details_offset=4, save=save, clear=True)
 
 def fitness(run_name=DEFAULT_RUN_NAME):
     def get_generation_fitnesses(generation, run_name=DEFAULT_RUN_NAME):
@@ -72,12 +77,25 @@ def summarize_generation(generation, run_name=DEFAULT_RUN_NAME):
     print("Maximum fitness: ", max_fitness, f"(individual {max_fitness_individual})")
     return min_fitness_individual, first_quartile_fitness_individual, median_fitness_individual, third_quartile_fitness_individual, max_fitness_individual
 
+def demo_with_graphs():
+    return demo(True)
+
+def demo_no_graphs():
+    return demo(False)
+
+def demo(save=False):
+    for generation in [0, 1, 2, 3, 10, 22, 31, 66, 83]:
+        print("Generation: ", generation)
+        complete(generation, save=save)
+        print("------------------------------------------------------")
+
 def main():
     parser = argparse.ArgumentParser(description='Arg parser.')
     parser.add_argument('-f', '--function', type=str, default="single", help='What function to run via the main method. Use single to visualize a single run; complete to visualize a complete run (5 visuals per generation); fitness to plot the fitness scores of every generation in the run')
     parser.add_argument('-g', '--generation', type=int, default=0, help='Generation number to pull run from')
     parser.add_argument('-i', '--individual', type=int, default=0, help='Individual number to pull run from')
     parser.add_argument('-r', '--run_name', type=str, default=DEFAULT_RUN_NAME, help='Run name to pull an individual run from')
+    parser.add_argument('-n', '--num_runs', type=int, default=3, help='Number of simulation runs (for deploy function only)')
 
     args = parser.parse_args()
     if args.function == "single":
@@ -86,6 +104,10 @@ def main():
         complete(args.generation, args.run_name)
     elif args.function == "fitness":
         fitness(args.run_name)
+    elif "demo" in args.function and "no" in args.function:
+        demo_no_graphs()
+    elif "demo" in args.function and "with" in args.function:
+        demo_with_graphs()
 
 if __name__ == "__main__":
     main()

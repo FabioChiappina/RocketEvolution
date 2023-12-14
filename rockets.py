@@ -157,7 +157,8 @@ class Rocket:
     
     def get_moment_of_inertia(self):
         return (1/12 * (self.fuselage_mass+self.fuel_mass) * self.fuselage_length**2) + sum([engine.mass * (self.fuselage_length * engine.position_on_fuselage - self.get_center_of_mass())**2 for engine in self.engines])
-    
+        # TODO -- the above is wrong actually, there should be a parallel axis term for the fuselage and fuel mass since that's about their center, but the center of mass is slightly offset
+
     def true_speed(self):
         return np.sqrt(self.velocity_x**2 + self.velocity_y**2)
     
